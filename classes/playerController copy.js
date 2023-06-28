@@ -1,13 +1,12 @@
 import { AnimationMixer } from "three";
 
 class CharacterController {
-    constructor(model, speed, modelAnchor) {
+    constructor(model, speed) {
         this.model = model.scene;
         this.mixer = new AnimationMixer(model.scene);
         this.modelAnim = model.animations;
         this.speed = speed;
         this.pressedKeys = new Array();
-        this.modelAnchor = modelAnchor;
 
         // initiate Keyboard Controls.
         this.initiateKeyboardControls();
@@ -35,7 +34,8 @@ class CharacterController {
 
     initiateMouseControls() {
         document.addEventListener('mousemove', ({ movementX, movementY }) => {
-            movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 50) : this.modelAnchor.rotation.y += -Math.abs(movementX / 50)  
+            movementX < 0 ? this.model.rotation.y += Math.abs(movementX / 50) : this.model.rotation.y += -Math.abs(movementX / 50)  
+            // this.model.rotation.x += movementY / 75
         })
     }
 
@@ -75,23 +75,19 @@ class CharacterController {
     }
 
     _moveForward(isSprinting) {
-        this.modelAnchor.translateZ(isSprinting ? this.speed : this.speed / 4);
-        this.model.rotation.y = 0    
+        this.model.translateZ(isSprinting ? this.speed : this.speed / 4);
     }
 
     _moveBackward() {
-        this.modelAnchor.translateZ(-this.speed);
-        this.model.rotation.y = 110
+        this.model.translateZ(-this.speed);
     }
 
     _moveLeft() {
-        this.modelAnchor.translateX(this.speed);
-        this.model.rotation.y = -55
+        this.model.translateX(this.speed);
     }
 
     _moveRight() {
-        this.modelAnchor.translateX(-this.speed);
-        this.model.rotation.y = 55
+        this.model.translateX(-this.speed);
     }
     
     _playAnimation(key) {
@@ -104,22 +100,22 @@ class CharacterController {
                 this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'sprint')[0] ).play();
                 break;
             case 's':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'run')[0] ).play();
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
                 break;
             case 'S':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'sprint')[0] ).play();
-                break;
-            case 'a':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'run')[0] ).play();
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
                 break;
             case 'A':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'sprint')[0] ).play();
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
                 break;
-            case 'd':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'run')[0] ).play();
+            case 'a':
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
                 break;
             case 'D':
-                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'sprint')[0] ).play();
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
+                break;
+            case 'd':
+                this.mixer.clipAction( this.modelAnim.filter(anim => anim.name === 'idle')[0] ).play();
                 break;
             default:
                 break;

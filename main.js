@@ -33,15 +33,15 @@ loader.load( '../models/box_man.glb', function ( gltf ) {
         }
     });
 
-    anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1, 1, 1, 1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
+    anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1, 0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
     
-    //anchorPoint.add(camera);
+    anchorPoint.add(camera);
 
-    gltf.scene.add(anchorPoint);
+    anchorPoint.add(gltf.scene)
 
-    scene.add( gltf.scene );
+    scene.add( anchorPoint );
 
-    controller = new CharacterController(gltf, .05);
+    controller = new CharacterController(gltf, .05, anchorPoint);
 
 }, undefined, function ( error ) {
 	console.error( error );
@@ -63,8 +63,6 @@ function animate() {
     if(controller)
     controller.updateControls();
 	renderer.render(scene, camera);
-    if(anchorPoint)
-    anchorPoint.rotation.x += 0.01;
 }
 
 animate();
