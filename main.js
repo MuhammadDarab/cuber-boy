@@ -1,11 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import path from 'path';
-
-// import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import CharacterController from './classes/playerController';
-import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import modalController from './classes/modalsController';
 
+new modalController(document).displayWelcomeModal();
 // remove cursor from reaching borders.
 document.body.addEventListener("click", async () => {
     await document.body.requestPointerLock();
