@@ -1,13 +1,16 @@
 import { AnimationMixer } from "three";
 
 class CharacterController {
-    constructor(model, speed, modelAnchor) {
+    constructor(model, speed, modelAnchor, camera) {
         this.model = model.scene;
         this.mixer = new AnimationMixer(model.scene);
         this.modelAnim = model.animations;
         this.speed = speed;
         this.pressedKeys = new Array();
         this.modelAnchor = modelAnchor;
+        this.camera = camera;
+
+        this.mixer.clipAction(this.modelAnim.filter(anim => anim.name === 'idle')[0]).play();
 
         // initiate Keyboard Controls.
         this.initiateKeyboardControls();
@@ -18,13 +21,13 @@ class CharacterController {
 
     initiateKeyboardControls() {
         document.addEventListener('keydown', ({key}) => {
-            if(!this.pressedKeys.includes(key)) {
+            if(!this.pressedKeys.includes(key) && this._isWSAD(key)) {
                 this.pressedKeys.push(key);
                 this._playAnimation(key);
             } 
         })
         document.addEventListener('keyup', ({key}) => {
-            this.pressedKeys = this.pressedKeys.filter((char) => char !== key)
+            this.pressedKeys = this.pressedKeys.filter((char) => char !== key && char !== key.toUpperCase() && char !== key.toLowerCase())
             // meaning there are no keys pressed hence idle anim
             if(this.pressedKeys.length == 0) {
                 this.mixer.stopAllAction();
@@ -36,6 +39,19 @@ class CharacterController {
     initiateMouseControls() {
         document.addEventListener('mousemove', ({ movementX, movementY }) => {
             movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 50) : this.modelAnchor.rotation.y += -Math.abs(movementX / 50)  
+
+            if(this.camera.rotation.x <= 0.4) {
+                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 1000) : this.camera.rotation.x += Math.abs(movementY / 1000)  
+            } else {
+                this.camera.rotation.x = 0.39
+            }
+            
+            if (this.camera.rotation.x >= -0.4) {
+                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 1000) : this.camera.rotation.x += Math.abs(movementY / 1000)  
+            } else {
+                this.camera.rotation.x = -0.39
+            }
+            // for top-to-bottom axis, rotate the camera only
         })
     }
 
@@ -75,7 +91,7 @@ class CharacterController {
     }
 
     _moveForward(isSprinting) {
-        this.modelAnchor.translateZ(isSprinting ? this.speed : this.speed / 4);
+        this.modelAnchor.translateZ(isSprinting ? this.speed * 2: this.speed);
         this.model.rotation.y = 0    
     }
 
@@ -124,6 +140,10 @@ class CharacterController {
             default:
                 break;
         }
+    }
+
+    _isWSAD(key) {
+        return key == 'W' || key == 'w' || key == 'S' ||  key == 's' || key == 'A' ||  key == 'a' || key == 'D' || key == 'd' 
     }
 
 }

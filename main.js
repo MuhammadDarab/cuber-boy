@@ -41,7 +41,7 @@ loader.load( '../models/box_man.glb', function ( gltf ) {
 
     scene.add( anchorPoint );
 
-    controller = new CharacterController(gltf, .05, anchorPoint);
+    controller = new CharacterController(gltf, .05, anchorPoint, camera);
 
 }, undefined, function ( error ) {
 	console.error( error );
