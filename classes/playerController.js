@@ -1,7 +1,7 @@
 import { AnimationMixer } from "three";
 
 class CharacterController {
-    constructor(model, speed, modelAnchor, camera) {
+    constructor(model, speed, modelAnchor, camera, onMouseChange, onKeyboardChange) {
         this.model = model.scene;
         this.mixer = new AnimationMixer(model.scene);
         this.modelAnim = model.animations;
@@ -13,17 +13,19 @@ class CharacterController {
         this.mixer.clipAction(this.modelAnim.filter(anim => anim.name === 'idle')[0]).play();
 
         // initiate Keyboard Controls.
-        this.initiateKeyboardControls();
+        this.initiateKeyboardControls(onKeyboardChange);
 
         // initiate Mouse Controls
-        this.initiateMouseControls();
+        this.initiateMouseControls(onMouseChange);
     }
 
-    initiateKeyboardControls() {
+    initiateKeyboardControls(onKeyboardChange) {
         document.addEventListener('keydown', ({key}) => {
             if(!this.pressedKeys.includes(key) && this._isWSAD(key)) {
                 this.pressedKeys.push(key);
                 this._playAnimation(key);
+                // broadcast pressed keys on socket! 
+                onKeyboardChange(this.pressedKeys, key);
             } 
         })
         document.addEventListener('keyup', ({key}) => {
@@ -33,10 +35,12 @@ class CharacterController {
                 this.mixer.stopAllAction();
                 this.mixer.clipAction(this.modelAnim.filter(anim => anim.name === 'idle')[0]).play();
             }
+            // broadcast pressed keys on socket!
+            onKeyboardChange(this.pressedKeys);
         })
     }
 
-    initiateMouseControls() {
+    initiateMouseControls(onMouseChange) {
         document.addEventListener('mousemove', ({ movementX, movementY }) => {
             movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 50) : this.modelAnchor.rotation.y += -Math.abs(movementX / 50)  
 
@@ -52,6 +56,8 @@ class CharacterController {
                 this.camera.rotation.x = -0.39
             }
             // for top-to-bottom axis, rotate the camera only
+            // broadcast movement X & Y on socket.
+            onMouseChange({ movementX, movementY });
         })
     }
 

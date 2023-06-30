@@ -1,66 +1,122 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import CharacterController from './classes/playerController';
 import modalController from './classes/modalsController';
+import generateArea from './classes/generateArea';
+import characterGenerator from './classes/characterGenerator';
+import { io } from 'socket.io-client';
+import { v4 as uuid } from 'uuid';
 
-new modalController(document).displayWelcomeModal();
-// remove cursor from reaching borders.
-document.body.addEventListener("click", async () => {
-    await document.body.requestPointerLock();
+const peerControllerPlayers = new Array();
+
+const socket = io.connect("http://192.168.100.14:8000", {
+  withCredentials: true,
+  extraHeaders: {
+    "my-custom-header": "abcd",
+  },
 });
 
-const light = new THREE.AmbientLight(0xffffff, 0.6);
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const modalHandler = new modalController(document);
+modalHandler.displayWelcomeModal();
 
-scene.add(light);
+const areaHandler = new generateArea({
+    ground: '../textures/ground/ground.jpg',
+    skyBox: [
+        '../skybox/sunny/back.jpg',
+        '../skybox/sunny/front.jpg',
+        '../skybox/sunny/top.jpg',
+        '../skybox/sunny/bottom.jpg',
+        '../skybox/sunny/right.jpg',
+        '../skybox/sunny/left.jpg'
+    ]
+}, document)
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth - 1, window.innerHeight - 1 );
-document.body.appendChild( renderer.domElement );
+const colors = [
+    0x00ff00,
+    0x0000ff,
+    0xff0000
+]
+const selectedColor = colors[Math.trunc(Math.random()*colors.length)];
+window.yourId = uuid();
+const controllableCharacter = new characterGenerator(true,
+    areaHandler,
+    selectedColor,
+    window.yourId,
+    () => {
+        // Since it was your character, you need to update its controls..
+        areaHandler.appendInAnimationLoop(controllableCharacter.updateControls);
+        // Once modal's and all are loaded, go for the emission that you have joined!
+        socket.emit('player:joined', {
+            id: window.yourId,
+            color: selectedColor
+        })
+    },
+    ({movementX, movementY}) => {
+        socket.emit('player:mouse-move', {
+            id: window.yourId,
+            movementX,
+            movementY
+        })
+    },
+    (pressedKeys, currentKey) => {
+        socket.emit('player:keys-move', {
+            id: window.yourId,
+            pressedKeys,
+            currentKey
+        })
+    }
+);
 
-let controller;
-let anchorPoint;
+// Generate Already existing players in the room! 
+socket.on('players:list', ({list, identity}) => {
+    if(window.yourId === identity) {
+        list.map(({id, color}) => {
+            const targetNPC = new characterGenerator(
+                false,
+                areaHandler,
+                color,
+                id, 
+                () => {},
+                // We should not emit events from npc.
+                () => {},
+                () => {}
+            );
+            areaHandler.appendInAnimationLoop(targetNPC.updatePeerControls);
+            peerControllerPlayers.push(targetNPC);
+        })
+    }
+})
 
-const loader = new GLTFLoader();
-loader.load( '../models/box_man.glb', function ( gltf ) {
-    var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    gltf.scene.traverse(function (child) {
-        if (child instanceof THREE.Mesh) {
-            child.material = material;
-        }
-    });
-
-    anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1, 0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
-    
-    anchorPoint.add(camera);
-
-    anchorPoint.add(gltf.scene)
-
-    scene.add( anchorPoint );
-
-    controller = new CharacterController(gltf, .05, anchorPoint, camera);
-
-}, undefined, function ( error ) {
-	console.error( error );
-} );
-
-const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const geometry = new THREE.BoxGeometry(15, 1, 15, 1, 0.1, 1);
-const cube = new THREE.Mesh( geometry, material );
-cube.position.y = -.5;
-scene.add(cube);
-
-camera.position.y = 1
-camera.position.z = -1.5
-camera.position.x = -0.70
-camera.rotation.y = 3
-
-function animate() {
-	requestAnimationFrame(animate);
-    if(controller)
-    controller.updateControls();
-	renderer.render(scene, camera);
+socket.on('player:joined', ({ id, color }) => {
+    const targetNPC = new characterGenerator(
+        false,
+        areaHandler,
+        color,
+        id, 
+        () => {},
+        // We should not emit events from npc.
+        () => {},
+        () => {}
+    );
+    areaHandler.appendInAnimationLoop(targetNPC.updatePeerControls);
+    peerControllerPlayers.push(targetNPC);
+})
+ 
+window.onbeforeunload = () => {
+    socket.emit('player:leave', window.yourId)
 }
 
-animate();
+socket.on('player:mouse-move', ({movementX, movementY, id}) => {
+    const targetedNPC = peerControllerPlayers.filter((player) => player.identifier == id)[0]
+    if(targetedNPC)
+    targetedNPC.updatePeerMouse({movementX, movementY});
+})
+
+socket.on('player:keys-move', ({pressedKeys, currentKey, id}) => {
+    const targetedNPC = peerControllerPlayers.filter((player) => player.identifier == id)[0]
+    if(targetedNPC)
+    targetedNPC.updatePeerKeyboard(pressedKeys, currentKey);
+    else console.log(peerControllerPlayers);
+})
+
+areaHandler.animation(() => {
+    // Optionally put anything in the loop
+})
