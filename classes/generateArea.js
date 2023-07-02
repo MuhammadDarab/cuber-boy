@@ -7,6 +7,7 @@ class generateArea {
 
         this.document = document;
         this.skyBox = new THREE.CubeTextureLoader().load(skyBox);
+        this.skyBox.name = 'sky-box'
         this.groundTexture = ground;
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -26,7 +27,6 @@ class generateArea {
         // Set SKYBOX.
         this.scene.background = this.skyBox;
     
-        // set a light!
         this.light = new THREE.DirectionalLight(0xffffff, 4.0);
         this.light.castShadow = true;
 
@@ -44,7 +44,7 @@ class generateArea {
         this.light.position.set(10, 80, 40);
         this.light.target.position.set(0, 0, 0);
 
-        this.scene.add(new THREE.CameraHelper(this.light.shadow.camera));
+        // this.scene.add(new THREE.CameraHelper(this.light.shadow.camera));
 
         this.scene.add(this.light);
 
@@ -66,15 +66,45 @@ class generateArea {
         });
         const geometry = new THREE.BoxGeometry(500, 1, 500, 1, 0.1, 1);
         const cube = new THREE.Mesh( geometry, material );
+        cube.name = 'plane';
         cube.castShadow = false;
         cube.receiveShadow = true; // Enable shadow reception
-        cube.position.y = -.5;
+        // cube.position.y = 1;
         this.scene.add(cube);
-    }
 
+        this.raycaster = new THREE.Raycaster();
+        this.pointer = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
+        
+        this.testCube = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 4), new THREE.MeshBasicMaterial({ color:0xffffff }));
+        this.testCube.userData = { name: 'test-cube' };
+        this.testCube.position.x = 4;
+        this.testCube.position.y = 4;
+        this.testCube.position.z = 4;
+        this.scene.add(this.testCube);
+
+        // Add ArrowHelper
+        const arrowLength = 25; // Length of the arrow representing the ray
+        const arrowColor = 0xff0000; // Color of the arrow representing the ray
+        this.arrowHelper = new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, arrowLength, arrowColor);
+        // this.scene.add(this.arrowHelper);
+    }
+    
     animation = (callback) => {
+
+        this.testCube.material.color.setHex(0xffffff)
+        this.raycaster.set(this.camera.getWorldPosition(new THREE.Vector3()), this.camera.getWorldDirection(new THREE.Vector3()));
+
+        const intersects = this.raycaster.intersectObject(this.testCube, true);
+        this.arrowHelper.position.copy(this.camera.getWorldPosition(new THREE.Vector3()))
+        this.arrowHelper.setDirection(this.camera.getWorldDirection(new THREE.Vector3()));
+
+        for ( let i = 0; i < intersects.length; i ++ ) {
+            intersects[ i ].object.material.color.set( 0xff0000 );
+        }
+
         this.renderer.render(this.scene, this.camera);
-        callback();
+        callback(this.scene, this.camera);
+
         this.fnList.map(fn => fn());
         requestAnimationFrame(() => this.animation(callback));
     }

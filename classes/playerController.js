@@ -42,16 +42,16 @@ class CharacterController {
 
     initiateMouseControls(onMouseChange) {
         document.addEventListener('mousemove', ({ movementX, movementY }) => {
-            movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 50) : this.modelAnchor.rotation.y += -Math.abs(movementX / 50)  
+            movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 100) : this.modelAnchor.rotation.y += -Math.abs(movementX / 100)  
 
             if(this.camera.rotation.x <= 0.4) {
-                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 1000) : this.camera.rotation.x += Math.abs(movementY / 1000)  
+                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 500) : this.camera.rotation.x += Math.abs(movementY / 500)  
             } else {
                 this.camera.rotation.x = 0.39
             }
             
             if (this.camera.rotation.x >= -0.4) {
-                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 1000) : this.camera.rotation.x += Math.abs(movementY / 1000)  
+                movementY < 0 ? this.camera.rotation.x += -Math.abs(movementY / 500) : this.camera.rotation.x += Math.abs(movementY / 500)  
             } else {
                 this.camera.rotation.x = -0.39
             }
