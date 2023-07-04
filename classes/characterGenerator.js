@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import PeerController from './PeerController';
 
 class characterGenerator {
-    constructor(isControllable, areaHandler, color, identifier, modalLoadCallBack, msCb, kbCb) {
+    constructor(isControllable, areaHandler, color, identifier, modalLoadCallBack, msCb, kbCb, fireCb) {
         this.controller;
         this.peerController = null;
         this.isControllable = isControllable;
@@ -12,6 +12,8 @@ class characterGenerator {
         this.identifier = identifier;
         this.modalLoadCallBack = modalLoadCallBack;
         this.areaHandler = areaHandler;
+
+        this.fireCallback = fireCb;
 
         this.mouseCallBack = msCb;
         this.keyboardCallBack = kbCb;
@@ -22,15 +24,10 @@ class characterGenerator {
     _loadModal = (path) => {
         this.loader = new GLTFLoader();
         this.loader.load( path, ( gltf ) => {
-            const material = new THREE.MeshBasicMaterial({ color: this.color });
-            
-            // Turn color of user when targeted..?
-            // gltf.scene.traverse(function (child) {
-            //     if (child instanceof THREE.Mesh) {
-            //         child.material = material;
-            //     }
-            // });
 
+            gltf.scene.traverse((node) => {
+                node.userData = { ...node.userData, identifier: this.identifier }
+            });
             // enable model's shadows completely!
             gltf.scene.traverse( function( children ) { if ( children instanceof THREE.Mesh ) { children.castShadow = true; } } );
             gltf.scene.traverse( function( children ) { if ( children instanceof THREE.Mesh ) { children.receiveShadow = true; } } );
@@ -43,10 +40,11 @@ class characterGenerator {
                 anchorPoint.add(gltf.scene)
                 anchorPoint.name = 'anchor-point';
                 this.areaHandler.scene.add( anchorPoint );
-                this.controller = new CharacterController(gltf, .025, anchorPoint, this.areaHandler.camera, this.mouseCallBack, this.keyboardCallBack);
+                this.controller = new CharacterController(gltf, .025, anchorPoint, this.areaHandler.camera, this.mouseCallBack, this.keyboardCallBack, this.fireCallback);
             } else {
                 // handle Peer Controlled logic.
                 let anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1, 0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
+                anchorPoint.position.y = 0.5;
                 anchorPoint.add(gltf.scene);
                 this.areaHandler.scene.add( anchorPoint );
                 this.peerController = new PeerController(gltf, .025, anchorPoint);

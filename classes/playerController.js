@@ -1,7 +1,7 @@
 import { AnimationMixer } from "three";
 
 class CharacterController {
-    constructor(model, speed, modelAnchor, camera, onMouseChange, onKeyboardChange) {
+    constructor(model, speed, modelAnchor, camera, onMouseChange, onKeyboardChange, onClick) {
         this.model = model.scene;
         this.mixer = new AnimationMixer(model.scene);
         this.modelAnim = model.animations;
@@ -16,7 +16,7 @@ class CharacterController {
         this.initiateKeyboardControls(onKeyboardChange);
 
         // initiate Mouse Controls
-        this.initiateMouseControls(onMouseChange);
+        this.initiateMouseControls(onMouseChange, onClick);
     }
 
     initiateKeyboardControls(onKeyboardChange) {
@@ -40,7 +40,7 @@ class CharacterController {
         })
     }
 
-    initiateMouseControls(onMouseChange) {
+    initiateMouseControls(onMouseChange, onClick) {
         document.addEventListener('mousemove', ({ movementX, movementY }) => {
             movementX < 0 ? this.modelAnchor.rotation.y += Math.abs(movementX / 100) : this.modelAnchor.rotation.y += -Math.abs(movementX / 100)  
 
@@ -58,6 +58,10 @@ class CharacterController {
             // for top-to-bottom axis, rotate the camera only
             // broadcast movement X & Y on socket.
             onMouseChange({ movementX, movementY });
+        })
+
+        document.addEventListener('click', (ev) => {
+            onClick(ev)
         })
     }
 

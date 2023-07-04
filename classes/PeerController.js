@@ -4,7 +4,8 @@ import { AnimationMixer } from "three";
 
 class PeerController {
 
-    constructor(model, speed, modelAnchor) {
+    constructor(model, speed, modelAnchor, initialCoords) {
+        this.modelGroup = model;
         this.model = model.scene;
         this.modelAnchor = modelAnchor;
         this.modelAnim = model.animations;

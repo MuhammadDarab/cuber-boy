@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import modalController from './classes/modalsController';
+import overlayController from './classes/overlayController';
 import generateArea from './classes/generateArea';
 import characterGenerator from './classes/characterGenerator';
 import { io } from 'socket.io-client';
@@ -14,8 +14,15 @@ const socket = io.connect("http://192.168.100.14:8000", {
   },
 });
 
-const modalHandler = new modalController(document);
-modalHandler.displayWelcomeModal();
+
+const overlayHandler = new overlayController(window);
+window.overlayHandler = overlayHandler;
+overlayHandler.displayWelcomeModal((playerName) => {
+    console.log(playerName);
+    overlayHandler.displaySuccessToastToAllUsers(playerName + ' has joined!');
+    overlayHandler.displayWarnToastToAllUsers(playerName + ' was shot by ' + 'xyz');
+
+});
 
 const areaHandler = new generateArea({
     ground: '../textures/ground/ground.jpg',
@@ -62,13 +69,32 @@ const controllableCharacter = new characterGenerator(true,
             pressedKeys,
             currentKey
         })
+    },
+    (ev) => {
+        const intersectedObjects = areaHandler.checkForIntersection();
+        if(intersectedObjects.length > 0) {
+            intersectedObjects.map(ints => {
+                const victim = peerControllerPlayers.filter(peerPlayer => ints.object.userData.identifier === peerPlayer.identifier)[0];
+                if(victim && victim.identifier) {
+                    socket.emit('player:shot', {
+                        id: window.yourId,
+                        shotUser: victim.identifier
+                    })
+                }
+            })
+        }
     }
 );
+
+socket.on('player:shot', ({shotUser, id}) => {
+    // play gun sound!
+    alert('player ' + shotUser + ' was killed by ' + id);
+})
 
 // Generate Already existing players in the room! 
 socket.on('players:list', ({list, identity}) => {
     if(window.yourId === identity) {
-        list.map(({id, color}) => {
+        list.map(({id, color, coordsX, coordsY}) => {
             const targetNPC = new characterGenerator(
                 false,
                 areaHandler,
@@ -76,6 +102,7 @@ socket.on('players:list', ({list, identity}) => {
                 id, 
                 () => {},
                 // We should not emit events from npc.
+                () => {},
                 () => {},
                 () => {}
             );
@@ -93,6 +120,7 @@ socket.on('player:joined', ({ id, color }) => {
         id, 
         () => {},
         // We should not emit events from npc.
+        () => {},
         () => {},
         () => {}
     );

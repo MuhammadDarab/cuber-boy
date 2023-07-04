@@ -91,17 +91,6 @@ class generateArea {
     
     animation = (callback) => {
 
-        this.testCube.material.color.setHex(0xffffff)
-        this.raycaster.set(this.camera.getWorldPosition(new THREE.Vector3()), this.camera.getWorldDirection(new THREE.Vector3()));
-
-        const intersects = this.raycaster.intersectObject(this.testCube, true);
-        this.arrowHelper.position.copy(this.camera.getWorldPosition(new THREE.Vector3()))
-        this.arrowHelper.setDirection(this.camera.getWorldDirection(new THREE.Vector3()));
-
-        for ( let i = 0; i < intersects.length; i ++ ) {
-            intersects[ i ].object.material.color.set( 0xff0000 );
-        }
-
         this.renderer.render(this.scene, this.camera);
         callback(this.scene, this.camera);
 
@@ -113,8 +102,10 @@ class generateArea {
         this.fnList.push(fn);
     }
 
-    addShadowLight(container) {
-        container.add(this.light);
+    checkForIntersection() {
+        this.raycaster.set(this.camera.getWorldPosition(new THREE.Vector3()), this.camera.getWorldDirection(new THREE.Vector3()));
+        const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+        return intersects;
     }
 
 }
