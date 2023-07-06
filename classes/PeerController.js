@@ -112,5 +112,9 @@ class PeerController {
                 break;
         }
     }
+    
+    removeUser() {
+        
+    }
 }
 export default PeerController;

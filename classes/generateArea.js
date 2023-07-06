@@ -83,9 +83,9 @@ class generateArea {
         this.scene.add(this.testCube);
 
         // Add ArrowHelper
-        const arrowLength = 25; // Length of the arrow representing the ray
-        const arrowColor = 0xff0000; // Color of the arrow representing the ray
-        this.arrowHelper = new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, arrowLength, arrowColor);
+        // const arrowLength = 25; // Length of the arrow representing the ray
+        // const arrowColor = 0xff0000; // Color of the arrow representing the ray
+        // this.arrowHelper = new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, arrowLength, arrowColor);
         // this.scene.add(this.arrowHelper);
     }
     
@@ -103,6 +103,7 @@ class generateArea {
     }
 
     checkForIntersection() {
+        this.raycaster.setFromCamera(new THREE.Vector2(0,0),this.camera);
         this.raycaster.set(this.camera.getWorldPosition(new THREE.Vector3()), this.camera.getWorldDirection(new THREE.Vector3()));
         const intersects = this.raycaster.intersectObjects(this.scene.children, true);
         return intersects;

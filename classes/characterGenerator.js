@@ -46,6 +46,23 @@ class characterGenerator {
                 let anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1, 0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
                 anchorPoint.position.y = 0.5;
                 anchorPoint.add(gltf.scene);
+
+                // Create a sprite material
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                context.font = 'Bold 50px Arial';
+                context.fillStyle = 'white';
+                context.fillText('username', 0, 50); // Replace 'Hello' with your desired text
+
+                const spriteTexture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
+
+                // Create a sprite
+                const nameTag = new THREE.Sprite(spriteMaterial);
+                nameTag.scale.set(1, 0.5, 0.5); // Adjust the scale as needed
+                nameTag.position.y = 1;
+                // Add the sprite to the scene
+                anchorPoint.add(nameTag);
                 this.areaHandler.scene.add( anchorPoint );
                 this.peerController = new PeerController(gltf, .025, anchorPoint);
             }

@@ -126,7 +126,7 @@ class overlayController {
         }).showToast();
     }
 
-    displayDeathOverlay(killedBy, removeAfter) {
+    displayDeathOverlay(killedBy, removeAfter, afterRemovalCallback) {
         this.deathOverlay = `
             <div>
             <style>
@@ -167,12 +167,13 @@ class overlayController {
 
         this.body.appendChild(this.overlay);
 
-        this.removeOverlay(removeAfter)
+        this.removeOverlay(removeAfter, afterRemovalCallback)
     }
 
-    removeOverlay(ms) {
+    removeOverlay(ms, afterRemovalCallback) {
         setTimeout(() => {
             this.body.removeChild(this.overlay);
+            afterRemovalCallback();
         },ms)
     }
 }
