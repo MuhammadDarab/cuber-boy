@@ -10,7 +10,7 @@ const peerControllerPlayers = new Array();
 
 // socket connection!
 // const socket = io.connect("https://4c63-2407-d000-403-51f9-408d-6f08-3121-6cda.ngrok-free.app/", {
-  const socket = io.connect("http://localhost:8000/", {
+const socket = io.connect("http://localhost:8000/", {
   withCredentials: true,
   extraHeaders: {
     "my-custom-header": "abcd",

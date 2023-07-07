@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 class generateArea {
     constructor({ ground, skyBox }, document) {
@@ -33,10 +34,10 @@ class generateArea {
         this.light.shadow.camera.near = 0.5;
         this.light.shadow.camera.far = 500  
 
-        // this.light.shadow.camera.left = -20;   // Left boundary
-        // this.light.shadow.camera.right = 20;   // Right boundary
-        // this.light.shadow.camera.top = 20;     // Top boundary
-        // this.light.shadow.camera.bottom = -20; // Bottom boundary
+        this.light.shadow.camera.left = -20;   // Left boundary
+        this.light.shadow.camera.right = 20;   // Right boundary
+        this.light.shadow.camera.top = 20;     // Top boundary
+        this.light.shadow.camera.bottom = -20; // Bottom boundary
 
         this.light.shadow.mapSize.width = 1024
         this.light.shadow.mapSize.height = 1024
@@ -74,14 +75,8 @@ class generateArea {
 
         this.raycaster = new THREE.Raycaster();
         this.pointer = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
-        
-        this.testCube = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 4), new THREE.MeshBasicMaterial({ color:0xffffff }));
-        this.testCube.userData = { name: 'test-cube' };
-        this.testCube.position.x = 4;
-        this.testCube.position.y = 4;
-        this.testCube.position.z = 4;
-        this.scene.add(this.testCube);
 
+        this.addTrees(25);
         // Add ArrowHelper
         // const arrowLength = 25; // Length of the arrow representing the ray
         // const arrowColor = 0xff0000; // Color of the arrow representing the ray
@@ -89,6 +84,40 @@ class generateArea {
         // this.scene.add(this.arrowHelper);
     }
     
+    addTrees(amount) {
+        if(amount > 0) {
+            const loader = new OBJLoader();
+            loader.load(
+                '../models/environment/tree/Horse-chestnut N051218.obj',
+                (tree) => {
+                    amount--;
+                    this.tree = tree;
+                    this.tree.position.x = Math.random() * 500;
+                    this.tree.position.y = 0;
+                    this.tree.position.z = Math.random() * 500;
+                    this.tree.scale.set(0.00024, 0.00044, 0.00024);
+                    
+                    this.tree.traverse( function( children ) { if ( children instanceof THREE.Mesh ) { children.castShadow = true; } } );
+                    this.tree.traverse( function( children ) { if ( children instanceof THREE.Mesh ) { children.receiveShadow = true; } } );
+
+                    const texture = new THREE.TextureLoader().load( '../models/environment/tree/COLOR.JPG' )
+                    tree.traverse(( child ) => {
+                        if (child.isMesh) {
+                            child.material.map = texture;
+                            child.geometry.computeVertexNormals();
+                        }
+                    });
+
+                    
+                    this.addTrees(amount);
+                    this.scene.add(this.tree);
+                },
+                (xhr) => console.log((xhr.loaded / xhr.total * 100 ) + '% loaded'),
+                (error) => console.log('An error happened', error)
+            )
+        }
+    }
+
     animation = (callback) => {
 
         this.renderer.render(this.scene, this.camera);

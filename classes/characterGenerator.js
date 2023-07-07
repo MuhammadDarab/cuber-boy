@@ -41,7 +41,7 @@ class characterGenerator {
                 anchorPoint.add(gltf.scene)
                 anchorPoint.name = 'anchor-point';
                 this.areaHandler.scene.add( anchorPoint );
-                this.controller = new CharacterController(gltf, .025, anchorPoint, this.areaHandler.camera, this.mouseCallBack, this.keyboardCallBack, this.fireCallback);
+                this.controller = new CharacterController(gltf, .100, anchorPoint, this.areaHandler.camera, this.mouseCallBack, this.keyboardCallBack, this.fireCallback);
             } else {
                 // handle Peer Controlled logic.
                 let anchorPoint = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1, 0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color: 0x0000FF }));
@@ -65,7 +65,7 @@ class characterGenerator {
                 // Add the sprite to the scene
                 anchorPoint.add(nameTag);
                 this.areaHandler.scene.add( anchorPoint );
-                this.peerController = new PeerController(gltf, .025, anchorPoint);
+                this.peerController = new PeerController(gltf, .100, anchorPoint);
             }
             
             // Done loading!.

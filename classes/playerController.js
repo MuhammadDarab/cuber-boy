@@ -97,7 +97,7 @@ class CharacterController {
             }
         })
         if(this.mixer)
-        this.mixer.update(1/120);
+        this.mixer.update(1/20);
     }
 
     _moveForward(isSprinting) {
