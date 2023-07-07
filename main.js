@@ -9,7 +9,8 @@ import { v4 as uuid } from "uuid";
 const peerControllerPlayers = new Array();
 
 // socket connection!
-const socket = io.connect("http://localhost:8000", {
+// const socket = io.connect("https://4c63-2407-d000-403-51f9-408d-6f08-3121-6cda.ngrok-free.app/", {
+  const socket = io.connect("http://localhost:8000/", {
   withCredentials: true,
   extraHeaders: {
     "my-custom-header": "abcd",
@@ -106,6 +107,7 @@ overlayHandler.displayWelcomeModal((playerName, selectedColor) => {
           if (victim && victim.identifier) {
             socket.emit("player:shot", {
               id: window.yourId,
+              playerName: window.yourName,
               shotUser: victim.identifier,
             });
           }
@@ -122,7 +124,7 @@ overlayHandler.displayWelcomeModal((playerName, selectedColor) => {
 });
 
 // Emitted once a connected player has shot!
-socket.on("player:shot", ({ shotUser, id }) => {
+socket.on("player:shot", ({ shotUser, playerName, id }) => {
   // play gun sound!
   if (shotUser == window.yourId) {
     overlayHandler.displayWarnToastToAllUsers(
@@ -142,22 +144,30 @@ socket.on("player:shot", ({ shotUser, id }) => {
 
 // Generate Already existing players in the room!
 socket.on("players:list", ({ list, identity }) => {
+
+  console.log('players:list', list, peerControllerPlayers);
+
   if (window.yourId === identity) {
     list.map(({ id, color, playerName, coordsX, coordsY }) => {
-      const targetNPC = new characterGenerator(
-        false,
-        areaHandler,
-        color,
-        id,
-        playerName,
-        () => {},
-        // We should not emit events from npc.
-        () => {},
-        () => {},
-        () => {}
-      );
-      areaHandler.appendInAnimationLoop(targetNPC.updatePeerControls);
-      peerControllerPlayers.push(targetNPC);
+
+      // CHeck if id exists in already created players
+      const searchForAlreadyExisting = peerControllerPlayers.filter(pcPlayer => pcPlayer.id === id);
+      if(searchForAlreadyExisting.length > 0) { // i.e. if the search for already existing player resulted that this player already exists. (Greater than 0 length)
+        const targetNPC = new characterGenerator(
+          false,
+          areaHandler,
+          color,
+          id,
+          playerName,
+          () => {},
+          // We should not emit events from npc.
+          () => {},
+          () => {},
+          () => {}
+        );
+        areaHandler.appendInAnimationLoop(targetNPC.updatePeerControls);
+        peerControllerPlayers.push(targetNPC);
+      }
     });
   }
 });
