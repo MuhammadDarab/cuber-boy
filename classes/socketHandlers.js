@@ -1,0 +1,7 @@
+class socketHandlers {
+    constructor(socket) {
+
+        
+
+    }
+}

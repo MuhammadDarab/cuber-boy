@@ -61,13 +61,15 @@ class overlayController {
                 </style>
                 <div class="modal">
                     <div class="modal">
-                        <input class="modal-title" placeholder="Enter your name!.."/>
+                        Your name: <input class="modal-title" placeholder="gamer-cube etc.."/>
+                        <br />
+                        Character color:
+                        <input type="color" class="modal-color" />
                         <div class="modal-btn">Join Room!</div>
                     </div>     
                 </div>
             </section>
         `
-
         this.overlay = this.document.createElement('div');
         this.overlay.style.position = 'absolute';
         this.overlay.style.top = '50%';
@@ -83,10 +85,12 @@ class overlayController {
 
     handleWelcomeModal(callback) {
         const playerNameField = document.querySelector(".modal-title");
+        const playerColorField = document.querySelector(".modal-color");
         this.document.querySelector(".modal-btn").addEventListener("click", async () => {
             if(playerNameField.value != '') {
                 this.playerName = playerNameField.value;
-                callback(this.playerName)
+                this.playerColor = playerColorField.value;
+                callback(this.playerName, this.playerColor)
                 await document.body.requestPointerLock();
                 this.body.removeChild(this.overlay);
             }

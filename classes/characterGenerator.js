@@ -4,10 +4,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import PeerController from './PeerController';
 
 class characterGenerator {
-    constructor(isControllable, areaHandler, color, identifier, modalLoadCallBack, msCb, kbCb, fireCb) {
+    constructor(isControllable, areaHandler, color, identifier, playerName, modalLoadCallBack, msCb, kbCb, fireCb) {
         this.controller;
         this.peerController = null;
         this.isControllable = isControllable;
+        this.playerName = playerName;
         this.color = color;
         this.identifier = identifier;
         this.modalLoadCallBack = modalLoadCallBack;
@@ -52,7 +53,7 @@ class characterGenerator {
                 const context = canvas.getContext('2d');
                 context.font = 'Bold 50px Arial';
                 context.fillStyle = 'white';
-                context.fillText('username', 0, 50); // Replace 'Hello' with your desired text
+                context.fillText(this.playerName, 0, 50); // Replace 'Hello' with your desired text
 
                 const spriteTexture = new THREE.CanvasTexture(canvas);
                 const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
